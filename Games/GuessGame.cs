@@ -9,15 +9,17 @@ namespace Games
     public class GuessGame
     {
         int maxGuesses = 6;
-        public void PlayGuess()
+        public void PlayGuess(Boolean guessRandom)
         {
             Boolean play = true;
             while (play)
             {
                 int gamble = 0;
                 int numberOfGuesses = 0;
+
+                Thread.Sleep(1000);
                 gamble = GetGuess();
-                numberOfGuesses = Guesses(gamble);
+                numberOfGuesses = Guesses(gamble, guessRandom);
                 Console.WriteLine("");
                 if (numberOfGuesses > maxGuesses)
                 {
@@ -39,58 +41,96 @@ namespace Games
             bool goodInput = false;
             Console.WriteLine("Vul een getal in tussen de 0 en 128");
             Console.WriteLine("Elke keer als ik geraden hebt zeg je hoger of lager.");
-            Console.WriteLine("Als ik meer dan " + maxGuesses.ToString() + " keer gok heb je gewonnen.");
+            Console.WriteLine("Deze stap sla ik over, ik vraag het aan de AI.");
+            Console.WriteLine("Als ik meer dan " + maxGuesses.ToString() + " keer nodig heb om het nummer te gokken heb jij gewonnen.");
             Console.WriteLine("");
             Console.Write("Vul een getal in tussen de 0 en 128: ");
 
             while (!goodInput)
             {
                 string gok = Console.ReadLine();
-                Console.WriteLine("Jouw voor mij geheime nummer is " + gok);
                 if (!int.TryParse(gok, out number))
                 {
+                    Console.WriteLine("Jouw invoer " + gok + " is niet numeriek!");
                     Console.Write("Vul een numeriek getal in tussen de 0 en 128: ");
                 }
                 else
                 {
                     if (number < min)
                     {
+                        Console.WriteLine("Het door jouw gekozen nummer " + gok + " is negatief!");
                         Console.Write("Vul een positief getal in tussen de 0 en 128: ");
                     }
                     else if (number >= max)
                     {
+                        Console.WriteLine("Het door jouw gekozen nummer " + gok + " is te groot!");
                         Console.Write("Vul een positief getal in onder de 128: ");
                     }
                     else
                     {
+                        Thread.Sleep(500);
                         goodInput = true;
                     }
                 }
             };
             return number;
         }
-        private int Guesses(int gamble)
+        private int Guesses(int gamble, Boolean guessRandom)
         {
             int min = 0;
             int max = 128;
             int numberOfGuesses = 1;
+            Random random = new Random();
             int bestGuess = (min + max) / 2;
-            while ((bestGuess != gamble) || (numberOfGuesses > 10))
+            while ((bestGuess != gamble))
             {
                 if (bestGuess > gamble)
                 {
-                    Console.WriteLine(gamble.ToString() + " is kleiner dan gok " + bestGuess.ToString());
-                    max = bestGuess;
-                    Console.Write("max wordt " + max.ToString());
+                    Console.WriteLine("Het door jouw gekozen nummer " + gamble.ToString() + " is kleiner dan mijn geraden getal " + bestGuess.ToString());
+                    Thread.Sleep(1000);
+                    if (max == bestGuess && guessRandom)
+                    {
+                        max = bestGuess - 1;
+                    }
+                    else
+                    {
+                        max = bestGuess;
+
+                    }
+                    Console.Write(" - max wordt " + max.ToString() + " en min blijft " + min.ToString());
                 }
                 else
                 {
-                    Console.WriteLine(gamble.ToString() + " is groter dan gok " + bestGuess.ToString());
-                    min = bestGuess;
-                    Console.Write("min wordt " + min.ToString());
+                    Console.WriteLine("Het door jouw gekozen nummer " + gamble.ToString() + " is groter dan dan mijn geraden getal " + bestGuess.ToString());
+                    Thread.Sleep(1000);
+                    if (min == bestGuess && guessRandom)
+                    {
+                        min = bestGuess +1;
+                    }
+                    else
+                    {
+                        min = bestGuess;
+
+                    }
+                    Console.Write(" - min wordt " + min.ToString() + " en max blijft " + max.ToString());
                 }
+
+                Thread.Sleep(1000);
                 bestGuess = (min + max) / 2;
-                Console.WriteLine(", mijn gok wordt " + bestGuess.ToString());
+                // Oneven getallen worden in 7 maal geraden, het moet wel leuk blijven.
+                if (guessRandom && numberOfGuesses > 2)
+                { 
+                    int randomGuess = random.Next(min, max);
+                    bestGuess = randomGuess;
+                }
+
+                if (numberOfGuesses > 10)
+                {
+                    break;
+                }
+                Thread.Sleep(1000);
+                Console.WriteLine(", ik raad nu het getal " + bestGuess.ToString());
+                Thread.Sleep(1000);
                 numberOfGuesses++;
             }
             return numberOfGuesses;
@@ -98,7 +138,7 @@ namespace Games
 
         private bool PlayAgain(string game)
         {
-            Console.Write("Wil je nogmaals " + game + " spelen [j/n] : ");
+            Console.Write("Wil je nogmaals het " + game + " spelen [j/n] : ");
             var result = Console.ReadLine().ToLower();
             if (result == "j")
             {
@@ -107,7 +147,7 @@ namespace Games
                 return true;
             }
             if (result == "n") return false;
-            Console.WriteLine("Vul y of n!");
+            Console.WriteLine("Vul j of n!");
             return PlayAgain(game);
         }
     }
